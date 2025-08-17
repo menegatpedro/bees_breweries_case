@@ -17,6 +17,7 @@ def get_breweries():
 
     return breweries_json
 
+
 def _schema():
     return StructType([
         StructField("id", StringType(), True),
@@ -40,4 +41,5 @@ def _schema():
 
 df = spark.createDataFrame(get_breweries(), schema=_schema())
 
-df.show(truncate=False)
+#df.show(truncate=False)
+print(get_breweries())
