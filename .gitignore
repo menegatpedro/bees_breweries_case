@@ -1,0 +1,33 @@
+### Airflow ###
+logs/
+airflow.db
+airflow-webserver.pid
+*.pid
+airflow-scheduler.err
+airflow-scheduler.out
+airflow.cfg
+
+### Python ###
+__pycache__/
+*.py[cod]
+*$py.class
+
+### Docker ###
+docker-compose.*.yml
+
+### Spark ###
+spark-warehouse/
+metastore_db/
+derby.log
+#*.parquet
+*.csv
+
+### Other ###
+*.tmp
+*.bak
+*.swp
+*~
+~$*
+
+# Log files
+*.log
