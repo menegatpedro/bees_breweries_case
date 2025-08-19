@@ -1,0 +1,3 @@
+requests
+delta-spark==3.2.0
+pyspark==3.5.6

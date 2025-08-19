@@ -31,3 +31,4 @@ derby.log
 
 # Log files
 *.log
+logs/
