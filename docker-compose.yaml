@@ -22,8 +22,8 @@ services:
       airflow connections add smtp_default
         --conn-type smtp
         --conn-host smtp.gmail.com
-        --conn-login pedromenegat@gmail.com
-        --conn-password ukheozinkgtsqtgp
+        --conn-login <YOUR-EMAIL-HERE>
+        --conn-password <YOUR-PASSWORD-HERE>
         --conn-port 587
         --conn-extra '{\"starttls\": true}'
       "
@@ -32,16 +32,16 @@ services:
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
       AIRFLOW__WEBSERVER__SECRET_KEY: "d4f5g6h7j8k9l0q1w2e3r4t5y6u7i8o9p0a1s2d3f4g5"
       #email config      
-      AIRFLOW_CONN_SMTP_DEFAULT: "smtp://pedromenegat%40gmail.com:ukheozinkgtsqtgp@smtp.gmail.com:587/?starttls=true"
+      AIRFLOW_CONN_SMTP_DEFAULT: "smtp://pedromenegat%40gmail.com:<YOUR-PASSWORD-HERE>@smtp.gmail.com:587/?starttls=true"
       AIRFLOW__EMAIL__EMAIL_BACKEND: airflow.utils.email.send_email_smtp
       AIRFLOW__EMAIL__EMAIL_CONN_ID: "smtp_default"
       AIRFLOW__SMTP__SMTP_HOST: "smtp.gmail.com"
       AIRFLOW__SMTP__SMTP_STARTTLS: "True"
       AIRFLOW__SMTP__SMTP_SSL: "False"
-      AIRFLOW__SMTP__SMTP_USER: "pedromenegat@gmail.com"
-      AIRFLOW__SMTP__SMTP_PASSWORD: "ukheozinkgtsqtgp"
+      AIRFLOW__SMTP__SMTP_USER: "<YOUR-EMAIL-HERE>"
+      AIRFLOW__SMTP__SMTP_PASSWORD: "<YOUR-PASSWORD-HERE>"
       AIRFLOW__SMTP__SMTP_PORT: "587"
-      AIRFLOW__SMTP__SMTP_MAIL_FROM: "pedromenegat@gmail.com"
+      AIRFLOW__SMTP__SMTP_MAIL_FROM: "<YOUR-EMAIL-HERE>"
 
     depends_on:
       - postgres
@@ -60,10 +60,10 @@ services:
       AIRFLOW__SMTP__SMTP_HOST: smtp.gmail.com
       AIRFLOW__SMTP__SMTP_PORT: 587
       AIRFLOW__SMTP__SMTP_STARTTLS: "True"
-      AIRFLOW__SMTP__SMTP_USER: pedromenegat@gmail.com
-      AIRFLOW__SMTP__SMTP_PASSWORD: ukheozinkgtsqtgp
-      AIRFLOW__SMTP__SMTP_MAIL_FROM: pedromenegat@gmail.com
-    user: "50000:0"  # Explicitly set to airflow user with root group
+      AIRFLOW__SMTP__SMTP_USER: <YOUR-EMAIL-HERE>
+      AIRFLOW__SMTP__SMTP_PASSWORD: <YOUR-PASSWORD-HERE>
+      AIRFLOW__SMTP__SMTP_MAIL_FROM: <YOUR-EMAIL-HERE>
+    user: "50000:0"
     depends_on:
       - postgres
       - airflow-init
@@ -87,10 +87,10 @@ services:
       AIRFLOW__SMTP__SMTP_HOST: smtp.gmail.com
       AIRFLOW__SMTP__SMTP_PORT: 587
       AIRFLOW__SMTP__SMTP_STARTTLS: "True"
-      AIRFLOW__SMTP__SMTP_USER: pedromenegat@gmail.com
-      AIRFLOW__SMTP__SMTP_PASSWORD: ukheozinkgtsqtgp
-      AIRFLOW__SMTP__SMTP_MAIL_FROM: pedromenegat@gmail.com
-    user: "50000:0"  # Explicitly set to airflow user with root group
+      AIRFLOW__SMTP__SMTP_USER: <YOUR-EMAIL-HERE>
+      AIRFLOW__SMTP__SMTP_PASSWORD: <YOUR-PASSWORD-HERE>
+      AIRFLOW__SMTP__SMTP_MAIL_FROM: <YOUR-EMAIL-HERE>
+    user: "50000:0"
     depends_on:
       - postgres
       - airflow-init
