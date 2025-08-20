@@ -75,6 +75,10 @@ Before you begin, ensure you have the following installed on your machine:
 
 **Setup & Installation**
 - Clone the Repository
+- Update the variables with your own email and password:
+    - `AIRFLOW__SMTP__SMTP_USER`
+    - `AIRFLOW__SMTP__SMTP_PASSWORD`
+    - `AIRFLOW__SMTP__SMTP_MAIL_FROM`
 - Initialize the Airflow Environment
 - The required Docker services (Airflow webserver, scheduler, Spark) are defined in docker-compose.yaml. To start them, run:
 `docker-compose up -d`
