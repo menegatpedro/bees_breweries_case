@@ -17,6 +17,7 @@ class GoldListBreweriesOp(BaseOperator):
 
     def execute(self, context):
 
+        # Initialize Spark session with Delta Lake support
         spark = (
             SparkSession.builder
             .appName("BreweriesIngestion")
@@ -32,14 +33,19 @@ class GoldListBreweriesOp(BaseOperator):
             .getOrCreate()
         )
 
+        # Path to Silver layer data
         SILVER_PATH = "/opt/airflow/dags/silver/storage/list_breweries"
 
+        # Read data from Silver layer Delta table
         df = spark.read.format("delta").load(SILVER_PATH)
 
+        # Aggregate breweries count by type and country
         agg_df = df.groupBy("brewery_type", "country").count()
 
+        # Create temporary view for SQL queries
         agg_df.createOrReplaceTempView("vw_breweries_count_per_type_location")
         
+        # Display aggregated results ordered by count
         spark.sql("""
             SELECT brewery_type, country, count
             FROM vw_breweries_count_per_type_location
