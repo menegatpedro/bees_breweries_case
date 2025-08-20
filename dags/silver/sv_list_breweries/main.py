@@ -9,6 +9,7 @@ from pyspark.sql.types import StructType, StructField, StringType, DoubleType
 from pyspark.sql.functions import lit, col, trim, when, regexp_replace, initcap, concat_ws
 
 
+# Initialize Spark session with Delta Lake configuration
 spark = (
     SparkSession.builder
     .appName("BreweriesIngestion")
@@ -31,6 +32,7 @@ class SilverListBreweriesOp(BaseOperator):
        
 
     def execute(self, context):
+        # Create Spark session for Airflow operator execution
         spark = (
             SparkSession.builder
             .appName("BreweriesIngestion")
@@ -45,6 +47,7 @@ class SilverListBreweriesOp(BaseOperator):
                 
         spark.conf.set("spark.sql.adaptive.enabled", "true")
         
+        # Define data paths
         BRONZE_PATH = "/opt/airflow/dags/bronze/storage/list_breweries/*/*/*/*.parquet"
         SILVER_PATH = "/opt/airflow/dags/silver/storage/list_breweries"
 
@@ -73,6 +76,7 @@ class SilverListBreweriesOp(BaseOperator):
 
 
         def _schema():
+            # Define Silver layer schema
             return StructType([
                 StructField("id", StringType(), True),
                 StructField("name", StringType(), True),
@@ -92,12 +96,16 @@ class SilverListBreweriesOp(BaseOperator):
                 StructField("street", StringType(), True),
             ])
 
+        # Read raw data from Bronze layer
         df = spark.read.parquet(BRONZE_PATH)
 
+        # Remove duplicate records
         df_distinct = df.dropDuplicates(["id"])
 
+        # Apply schema casting and cleaning
         df_cast = cast_dataframe_with_schema(df_distinct, _schema())
 
+        # Apply data transformations
         df_transform = df_cast.withColumn("full_address", concat_ws(", ", "address_1", "address_2", "address_3"))\
                               .withColumn("website_url",regexp_replace(col("website_url"), "/$", ""))\
                               .withColumn("has_valid_coordinates", when((col("latitude").between(-90, 90)) & (col("longitude").between(-180, 180)), True).otherwise(False))\
@@ -105,8 +113,10 @@ class SilverListBreweriesOp(BaseOperator):
                               .withColumn("postal_code", regexp_replace(col("postal_code"), r"\D", ""))\
                               .withColumn("brewery_type", initcap(col("brewery_type")))
 
+        # Remove unnecessary columns
         df_clean = df_transform.drop("address_1", "address_2", "address_3", "state", "street")
 
+        # Reorder columns for better organization
         df_reorder = df_clean.select(
             "id",
             "name",
@@ -123,38 +133,10 @@ class SilverListBreweriesOp(BaseOperator):
             "website_url"
         )
 
+        # Write transformed data to Silver layer as Delta table
         df_reorder.write \
             .format("delta") \
             .mode("overwrite") \
             .partitionBy("country") \
             .option("overwriteSchema", "true") \
             .save(SILVER_PATH)
-
-
-        # Method 1: as a DataFrame
-        #df = spark.read.format("delta").load(SILVER_PATH)
-
-        # Show the first 20 rows
-        #df.show(truncate=False)
-
-        # Optional: see distinct states
-        #df.select("state_province").distinct().show()
-
-
-
-        # # Save a single CSV in the same folder as this script
-        # script_dir = os.path.dirname(os.path.abspath(__file__))
-        # tmp_dir = os.path.join(script_dir, "sample_csv_tmp")
-        # final_csv = os.path.join(script_dir, "sample.csv")
-
-        # # Write as a single-part CSV folder
-        # df_reorder.coalesce(1).write.mode("overwrite").option("header", "true").csv(tmp_dir)
-
-        # # Move the part file to sample.csv and clean up the tmp folder
-        # part_files = glob.glob(os.path.join(tmp_dir, "part-*.csv"))
-        # if not part_files:
-        #     raise RuntimeError("CSV write produced no part files.")
-        # shutil.move(part_files[0], final_csv)
-        # shutil.rmtree(tmp_dir)
-
-        # print(f"Saved CSV → {final_csv}")

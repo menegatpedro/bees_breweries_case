@@ -14,6 +14,7 @@ class BronzeListBreweriesOp(BaseOperator):
         
 
     def execute(self, context):
+        # Start Spark session with local config
         spark = (
             SparkSession.builder
             .appName("BreweriesIngestion")
@@ -26,15 +27,16 @@ class BronzeListBreweriesOp(BaseOperator):
             .getOrCreate()
         )
 
-        # API
+        # API config
         BASE_URL = "https://api.openbrewerydb.org/v1/breweries"
         PER_PAGE = 200
         SLEEP_BETWEEN_CALLS = 2
 
-        # Paths
+        # Define bronze storage paths
         PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
         OUTPUT_BASE = os.path.join(PROJECT_ROOT, "bronze", "storage", "list_breweries")
 
+        # Build partitioned output path (year/month/day)
         ingest_date = datetime.now()
         year = ingest_date.strftime("%Y")
         month = ingest_date.strftime("%Y%m")
@@ -44,6 +46,7 @@ class BronzeListBreweriesOp(BaseOperator):
 
 
         def _schema():
+            # Schema matches API fields
             return StructType([
                 StructField("id", StringType(), True),
                 StructField("name", StringType(), True),
@@ -65,6 +68,7 @@ class BronzeListBreweriesOp(BaseOperator):
 
 
         def get_page(page):
+            # Fetch one page with retries and backoff
             for attempt in range(5):
                 try:
                     resp = requests.get(BASE_URL, params={"page": page, "per_page": PER_PAGE}, timeout=10)
@@ -78,8 +82,6 @@ class BronzeListBreweriesOp(BaseOperator):
             print(f"Skipping page {page} after multiple retries")
             return []
 
-
-        # Page-by-page ingestion
         page = 1
         while True:
             print(f"Starting page number {page}")
@@ -87,8 +89,8 @@ class BronzeListBreweriesOp(BaseOperator):
             if not data:
                 break
 
-            # Convert to Spark DataFrame and write immediately            
-            df = spark.createDataFrame(data, schema = _schema())            
+            # Write page data to parquet incrementally
+            df = spark.createDataFrame(data, schema=_schema())            
             df.write.mode("append").parquet(OUTPUT_PATH)
             df.unpersist()            
             page += 1
@@ -96,15 +98,10 @@ class BronzeListBreweriesOp(BaseOperator):
 
         print("All data ingested successfully!")
 
+        # Rewrite to single output file
         df = spark.read.parquet(OUTPUT_PATH)
         df.coalesce(1).write.mode("overwrite").parquet(OUTPUT_PATH + "_tmp")
 
-
+        # Replace original folder with single-partition version
         shutil.rmtree(OUTPUT_PATH)
         os.rename(OUTPUT_PATH + "_tmp", OUTPUT_PATH)
-
-        """
-        Next steps:
-            - Decrease amount of writes.
-            - 
-        """
