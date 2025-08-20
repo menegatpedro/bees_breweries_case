@@ -63,3 +63,4 @@ Output is stored as a **Delta table**, partitioned by `country`.
 ---
 
 ## Architecture
+![Project Architecture](docs/arch.png)
