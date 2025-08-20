@@ -64,3 +64,20 @@ Output is stored as a **Delta table**, partitioned by `country`.
 
 ## Architecture
 ![Project Architecture](docs/arch.png)
+
+
+---
+
+## Prerequisites
+Before you begin, ensure you have the following installed on your machine:
+- Docker: Version 20.10.8 or higher. Get Docker
+- Docker Compose: Version 1.29.2 or higher (usually bundled with Docker Desktop).
+
+**Setup & Installation**
+- Clone the Repository
+- Initialize the Airflow Environment
+- The required Docker services (Airflow webserver, scheduler, Spark) are defined in docker-compose.yaml. To start them, run:
+`docker-compose up -d`
+- Once the containers are running, open your web browser and go to `http://localhost:8080`
+    - Username: admin
+    - Password: admin
